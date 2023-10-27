@@ -1,5 +1,6 @@
 package Entity;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class Entity {
@@ -18,5 +19,7 @@ public class Entity {
 
     public int spriteCOunter=0;
     public int spriteNum=1;
+    public Rectangle solidArea;
+    public boolean collisionOn =false;
 
 }
