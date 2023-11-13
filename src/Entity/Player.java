@@ -2,6 +2,7 @@ package Entity;
 
 import main.GamePanel;
 import main.KeyHandler;
+import main.UtilityTool;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -18,6 +19,9 @@ public class Player extends Entity{
     public final int screenY;
 
     public int hasKey=0;
+    int standCounter=0;
+    boolean moving=false;
+    int pixelCounter=0;
 
 
 
@@ -40,48 +44,61 @@ public class Player extends Entity{
         direction = "down";
     }
     public void getPlayerImage(){
-        try{
+        this.up1=setup("0");
+        up2=setup("1");
+        down1=setup("2");
+        down2=setup("3");
+        left1=setup("4");
+        left2=setup("5");
+        right1=setup("1");
+        right2=setup("2");
+    }
+    public BufferedImage setup(String imageName){
+        UtilityTool uTool = new UtilityTool();
+        BufferedImage image = null;
 
-            this.up1= ImageIO.read(new FileInputStream("src/res/player/0.png"));
-            up2= ImageIO.read(new FileInputStream("src/res/player/1.png"));
-            down1= ImageIO.read(new FileInputStream("src/res/player/2.png"));
-            down2= ImageIO.read(new FileInputStream("src/res/player/3.png"));
-            left1= ImageIO.read(new FileInputStream("src/res/player/4.png"));
-            left2= ImageIO.read(new FileInputStream("src/res/player/5.png"));
-            right1= ImageIO.read(new FileInputStream("src/res/player/1.png"));
-            right2= ImageIO.read(new FileInputStream("src/res/player/2.png"));
-
-
+        try {
+            image = ImageIO.read(getClass().getResource("/res/player/"+imageName+".png"));
+            image = uTool.scaleImage(image,gp.tileSize,gp.tileSize);
         }catch (IOException e){
             e.printStackTrace();
         }
+        return image;
     }
     public void update(){
-        if(keyH.upPressed == true || keyH.downPressed==true || keyH.leftPressed==true || keyH.rightPressed==true){
-            if (keyH.upPressed == true){
-                direction="up";
+        if (moving == false) {
+            if (keyH.upPressed == true || keyH.downPressed == true || keyH.leftPressed == true || keyH.rightPressed == true) {
+                if (keyH.upPressed == true) {
+                    direction = "up";
 
+                } else if (keyH.downPressed == true) {
+                    direction = "down";
+
+                } else if (keyH.leftPressed == true) {
+                    direction = "left";
+
+                } else if (keyH.rightPressed == true) {
+                    direction = "right";
+
+                }
+                moving=true;
+                //CHECK TILE COLLISION
+                collisionOn = false;
+                gp.cChecker.checkTile(this);
+
+                //CHECK OBJECT COLLISION
+                int objIndex = gp.cChecker.checkObject(this, true);
+                pickUpObject(objIndex);
+
+            } else {
+                standCounter++;
+                if (standCounter == 20) {
+                    spriteNum = 1;
+                    standCounter = 0;
+                }
             }
-            else if (keyH.downPressed ==true){
-                direction="down";
-
-            }
-            else if(keyH.leftPressed==true){
-                direction="left";
-
-            }
-            else if(keyH.rightPressed==true){
-                direction="right";
-
-            }
-            //CHECK TILE COLLISION
-            collisionOn = false;
-            gp.cChecker.checkTile(this);
-
-            //CHECK OBJECT COLLISION
-            int objIndex = gp.cChecker.checkObject(this,true);
-            pickUpObject(objIndex);
-
+        }
+        if (moving == true){
             //IF COLLISION IS FALSE, PLAYER CAN MOVE
             if(collisionOn == false){
                 switch (direction) {
@@ -101,7 +118,14 @@ public class Player extends Entity{
                 }
                 spriteCOunter=0;
             }
+            pixelCounter+=speed;
+            if(pixelCounter == 48){
+                moving=false;
+                pixelCounter=0;
         }
+    }
+
+
 
     }
     public void pickUpObject(int i){
@@ -127,7 +151,7 @@ public class Player extends Entity{
                     }
                     break;
                 case "Boots":
-                    speed+=10;
+                    speed+=4;
                     gp.playSE(2);
                     gp.obj[i]=null;
                     gp.ui.showMessage("You are the speed");
@@ -181,6 +205,6 @@ public class Player extends Entity{
                 }
                 break;
         }
-        g2.drawImage(image,screenX,screenY,gp.tileSize, gp.tileSize,null);
+        g2.drawImage(image,screenX,screenY,null);
     }
 }
